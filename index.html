@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma de Evaluación — Colegio Miguel de Cervantes Saavedra I.E.D.</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e3a8a">
+<link rel="stylesheet" href="styles.css">
+<!-- Generación de QR en cliente, sin backend -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Lectura de QR desde la cámara, sin backend -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">🏫</span>
+      <div>
+        <strong>Plataforma de Evaluación</strong>
+        <div class="brand-sub">Colegio Miguel de Cervantes Saavedra I.E.D.</div>
+      </div>
+    </div>
+    <nav class="mainnav" id="mainnav">
+      <a href="#/dashboard" data-route="dashboard">📊 Dashboard</a>
+      <a href="#/institucional" data-route="institucional">🏛️ Institucional</a>
+      <a href="#/evaluaciones" data-route="evaluaciones">📝 Evaluaciones</a>
+      <a href="#/hojas" data-route="hojas">🧾 Hojas / QR</a>
+      <a href="#/escaneo" data-route="escaneo">📷 Escaneo</a>
+      <a href="#/resultados" data-route="resultados">📈 Resultados</a>
+      <a href="#/config" data-route="config">⚙️ Configuración</a>
+    </nav>
+    <span id="sync-badge" class="sync-badge sync-idle">● Local</span>
+  </header>
+
+  <main id="app" class="app"></main>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
