@@ -1,0 +1,309 @@
+:root{
+  --bg:#0f172a; --surf:#16213c; --surf2:#1c2b4a; --bord:#2a3b5e;
+  --txt:#e8ecf5; --txt2:#93a3c2; --acc:#3b82f6; --acc2:#22d3ee;
+  --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+  --font:'Segoe UI',system-ui,sans-serif;
+  --bajo:#ef4444; --bas:#f59e0b; --alto:#22d3ee; --sup:#4ade80;
+}
+/* Tema claro — mismas variables, otros valores. Se activa con
+   [data-theme="light"] en <html>, guardado en localStorage. */
+:root[data-theme="light"]{
+  --bg:#f2f4f9; --surf:#ffffff; --surf2:#eef1f8; --bord:#d7deea;
+  --txt:#182135; --txt2:#5b6478; --acc:#2563eb; --acc2:#0891b2;
+  --ok:#16a34a; --warn:#c2740a; --bad:#dc2626;
+}
+:root[data-theme="light"] body{background:var(--bg)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font)}
+.hidden{display:none!important}
+
+/* Sin esto, el navegador aplica SUS márgenes de impresión por
+   defecto (varían según navegador/SO) por encima del tamaño exacto
+   210×297mm que ya tienen .cuad-page y .hoja-print — el sobrante
+   empujaba el contenido a una página extra en blanco al imprimir. */
+@page{size:A4;margin:0}
+
+/* ── LOGIN ── */
+#s-login{display:flex;position:fixed;inset:0;background:var(--bg);z-index:9000;align-items:center;justify-content:center}
+.login-box{background:var(--surf);border:1px solid var(--bord);border-radius:18px;padding:2.2rem 2rem;width:90%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.login-logo{width:64px;height:64px;object-fit:contain;margin-bottom:.6rem}
+.login-title{font-size:1.1rem;font-weight:800;margin-bottom:.2rem}
+.login-sub{font-size:.76rem;color:var(--txt2);margin-bottom:1.3rem;line-height:1.5}
+.role-tabs{display:flex;gap:.4rem;margin-bottom:1rem;background:var(--surf2);border-radius:10px;padding:.25rem}
+.role-tab{flex:1;background:transparent;border:none;color:var(--txt2);padding:.5rem;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:var(--font)}
+.role-tab.on{background:var(--acc);color:#fff}
+.login-field{margin-bottom:.7rem}
+.login-field input{width:100%;padding:.65rem .8rem;border-radius:10px;border:1.5px solid var(--bord);background:var(--surf2);color:var(--txt);font-size:.9rem;font-family:var(--font)}
+.login-field input:focus{border-color:var(--acc);outline:none}
+.login-btn{width:100%;background:var(--acc);color:#fff;border:none;border-radius:10px;padding:.7rem;font-weight:800;font-size:.9rem;cursor:pointer;font-family:var(--font)}
+.login-err{color:var(--bad);font-size:.8rem;margin-top:.6rem;min-height:1.1rem;font-weight:600}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.4rem;
+  background:var(--surf);border-bottom:1px solid var(--bord);flex-wrap:wrap;gap:.8rem}
+.brand{display:flex;align-items:center;gap:.6rem}
+.brand-icon-img{width:36px;height:36px;object-fit:contain}
+.brand-sub{font-size:.72rem;color:var(--txt2)}
+.mainnav{display:flex;gap:.4rem;flex-wrap:wrap}
+.mainnav a{color:var(--txt2);text-decoration:none;padding:.5rem .8rem;border-radius:8px;font-size:.85rem;font-weight:600}
+.mainnav a:hover{background:var(--surf2);color:var(--txt)}
+.mainnav a.active{background:var(--acc);color:#fff}
+.sync-badge{font-size:.75rem;font-weight:700;padding:.35rem .7rem;border-radius:99px;border:1px solid var(--bord);color:var(--txt2)}
+.sync-badge.sync-ok{color:var(--ok);border-color:var(--ok)}
+.sync-badge.sync-error{color:var(--bad);border-color:var(--bad)}
+.sync-badge.sync-syncing{color:var(--acc2);border-color:var(--acc2)}
+.app{padding:1.4rem;max-width:1200px;margin:0 auto}
+h1{font-size:1.4rem;margin:0 0 .3rem}
+h2{font-size:1.05rem;margin:1.4rem 0 .6rem}
+.subtitle{color:var(--txt2);font-size:.85rem;margin-bottom:1.2rem}
+.grid{display:grid;gap:1rem}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.card{background:var(--surf);border:1px solid var(--bord);border-radius:12px;padding:1rem 1.2rem}
+.stat-card .stat-num{font-size:1.9rem;font-weight:800;color:var(--acc2)}
+.stat-card .stat-lbl{font-size:.78rem;color:var(--txt2);margin-top:.2rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{padding:.55rem .6rem;border-bottom:1px solid var(--bord);text-align:left}
+th{color:var(--txt2);font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.02em}
+.btn{background:var(--acc);color:#fff;border:none;border-radius:8px;padding:.55rem 1rem;
+  font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+.btn.sec{background:var(--surf2);border:1px solid var(--bord);color:var(--txt)}
+.btn.sm{padding:.35rem .7rem;font-size:.78rem}
+.btn:hover{filter:brightness(1.1)}
+input,select,textarea{
+  background:var(--surf2);border:1px solid var(--bord);color:var(--txt);border-radius:8px;
+  padding:.55rem .7rem;font-size:.85rem;font-family:var(--font)
+}
+.form-row{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:.7rem}
+.form-row > *{flex:1;min-width:160px}
+.badge{display:inline-block;padding:.15rem .55rem;border-radius:99px;font-size:.72rem;font-weight:700}
+.badge.ok{background:rgba(34,197,94,.15);color:var(--ok)}
+.badge.warn{background:rgba(245,158,11,.15);color:var(--warn)}
+.badge.draft{background:rgba(148,163,184,.15);color:var(--txt2)}
+.empty{color:var(--txt2);font-size:.85rem;padding:1.5rem;text-align:center}
+.toast-container{position:fixed;bottom:1rem;right:1rem;display:flex;flex-direction:column;gap:.5rem;z-index:99}
+.toast{background:var(--surf);border:1px solid var(--bord);border-left:4px solid var(--acc);
+  padding:.7rem 1rem;border-radius:8px;font-size:.83rem;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+
+/* Hoja de respuestas / cuadernillo */
+.hoja-print{background:#fff;color:#111;padding:1.5rem;border-radius:8px;max-width:800px;margin:1rem auto}
+.hoja-hd{text-align:center;border-bottom:2px solid #111;padding-bottom:.6rem;margin-bottom:1rem}
+.hoja-hd h3{margin:.2rem 0}
+.hoja-meta{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:1rem}
+.qr-box{text-align:center}
+.qr-codigo{text-align:center;font-family:'Courier New',monospace;font-weight:800;font-size:.85rem;letter-spacing:.08em;margin-top:.3rem;color:#111}
+.omr-area{columns:2;column-gap:2rem}
+.omr-q{display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem;break-inside:avoid}
+.omr-q b{width:1.4rem}
+.bubble{width:22px;height:22px;border-radius:50%;border:1.5px solid #333;display:inline-flex;
+  align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#333}
+
+/* Hoja de respuestas agrupada por sesión: una columna por área,
+   cada una repite nombre/curso — mismo formato que el colegio ya usa. */
+.hoja-multi{max-width:1000px}
+.hoja-cols{display:flex;gap:1.4rem;align-items:flex-start}
+.hoja-col{flex:1;min-width:0;border-left:1px dashed #999;padding-left:1rem}
+.hoja-col:first-child{border-left:none;padding-left:0}
+.hoja-col-meta{font-size:.78rem;margin-bottom:.6rem}
+.hoja-col-name{border-bottom:1px solid #333;min-height:1.3rem;font-style:italic;margin:.15rem 0 .4rem}
+.hoja-col-area{font-weight:800;text-align:center;margin-bottom:.5rem;font-size:.9rem}
+.omr-area-col .omr-q{display:flex;align-items:center;gap:.3rem;margin-bottom:.3rem}
+.omr-area-col .bubble{width:19px;height:19px;font-size:.62rem}
+@media print{
+  /* Antes solo se ocultaban los botones — las tarjetas de
+     configuración ("1. Elige grado...", "2. Generar") y las
+     notificaciones seguían visibles y terminaban impresas junto con
+     el cuadernillo real. Ahora se oculta TODO por defecto y solo se
+     vuelve a mostrar el contenedor de salida real, reposicionado al
+     inicio de la página. */
+  body *{visibility:hidden!important}
+  #hojas-out, #hojas-out *,
+  #bo-out, #bo-out *{visibility:visible!important}
+  #hojas-out, #bo-out{position:absolute;top:0;left:0;width:100%;margin:0!important}
+  /* El botón de imprimir (.no-print) vive DENTRO de #hojas-out/#bo-out,
+     así que hereda "visibility:visible" de la regla de arriba. Pero
+     visibility:hidden en otras partes SÍ preserva el espacio en el
+     layout — con display:none (no solo visibility) se saca del flujo
+     por completo, si no, su hueco invisible empujaba la portada y
+     sobraba una página casi en blanco al final de cada una. */
+  #hojas-out .no-print, #bo-out .no-print{display:none!important}
+  body{background:#fff}
+}
+
+/* ── Cuadernillo de evaluación (portada + instrucciones + preguntas) ── */
+.cuad-page{
+  background:#fff;color:#111;width:210mm;min-height:297mm;margin:1.5rem auto;
+  padding:14mm 16mm;position:relative;overflow:visible;box-shadow:0 4px 20px rgba(0,0,0,.35);
+  font-family:Georgia,'Times New Roman',serif;
+}
+/* page-break-after en TODAS las páginas (incluida la última) es lo que
+   generaba una página extra en blanco al final al imprimir/exportar a
+   PDF — con :not(:last-child) el salto de página solo va ENTRE páginas. */
+.cuad-page:not(:last-child){page-break-after:always}
+.cuad-cover{padding:0;height:297mm;display:flex;flex-direction:column;position:relative;overflow:hidden;background:#fff}
+
+/* Estructura compartida — un encabezado delgado (no una banda de color
+   ocupando media página), cuerpo centrado, pie con regla fina. El
+   "motivo" decorativo de cada nivel vive en una capa aparte detrás del
+   contenido (z-index:0), así el texto siempre tiene contraste
+   garantizado sin importar qué dibuje el fondo. */
+.cuad-cover .cv-motif{position:absolute;inset:0;z-index:0;pointer-events:none}
+.cuad-cover .cv-head{position:relative;z-index:2;display:flex;align-items:center;gap:18px;padding:14mm 16mm 8mm}
+.cuad-cover .cv-shield{width:92px;height:92px;flex-shrink:0}
+.cuad-cover .cv-shield img{width:100%;height:100%;object-fit:contain}
+.cuad-cover .cv-head-text{flex:1}
+.cuad-cover .cv-colegio{font-family:Arial,sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:.01em;text-transform:uppercase;line-height:1.25}
+.cuad-cover .cv-sesion{font-family:Arial,sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:.04em;padding:.6rem 1.4rem;border-radius:4px;white-space:nowrap}
+.cuad-cover .cv-main{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 16mm}
+.cuad-cover .cv-eyebrow{font-family:Arial,sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.17em;text-transform:uppercase;margin-bottom:1.6rem}
+.cuad-cover .cv-title{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:3.6rem;line-height:1.1;margin:0 0 1.3rem}
+.cuad-cover .cv-title-rule{width:64px;height:3px;margin:0 0 2rem;border-radius:2px}
+.cuad-cover .cv-grado{display:flex;flex-direction:column;align-items:center;gap:.35rem}
+.cuad-cover .cv-grado-num{font-family:Arial,sans-serif;font-weight:900;font-size:5.6rem;line-height:1}
+.cuad-cover .cv-grado-label{font-family:Arial,sans-serif;font-weight:700;font-size:1.3rem;text-transform:uppercase;letter-spacing:.09em}
+.cuad-cover .cv-foot{position:relative;z-index:2;padding:6mm 18mm 14mm}
+.cuad-cover .cv-rule{height:1px;background:currentColor;opacity:.25;margin-bottom:9px}
+.cuad-cover .cv-pei{font-family:Arial,sans-serif;font-size:.85rem;font-style:italic;text-align:center;line-height:1.55;max-width:150mm;margin:0 auto}
+.cuad-cover .cv-corner{display:none} /* solo se muestran en el nivel Media */
+
+/* ── Primaria (2°-5°): cálida, redondeada, amable pero limpia — sin
+   clipart, solo formas geométricas suaves. ── */
+.tier-primaria.cuad-cover{color:#1f2937}
+.tier-primaria .cv-colegio{color:#c2410c}
+.tier-primaria .cv-sesion{background:#fb923c;color:#fff}
+.tier-primaria .cv-eyebrow{color:#0d9488}
+.tier-primaria .cv-title{color:#1f2937}
+.tier-primaria .cv-grado-num{color:#0d9488}
+.tier-primaria .cv-grado-label{color:#c2410c}
+.tier-primaria .cv-pei{color:#4b5563}
+.tier-primaria .cv-title-rule{background:#fb923c}
+.tier-primaria .cv-motif::before,.tier-primaria .cv-motif::after{content:'';position:absolute;border-radius:50%}
+.tier-primaria .cv-motif::before{width:320px;height:320px;background:#ccfbf1;top:-110px;right:-110px}
+.tier-primaria .cv-motif::after{width:230px;height:230px;background:#ffedd5;bottom:26mm;left:-90px}
+
+/* ── Secundaria (6°-9°): estructurada, azul, un quiebre geométrico
+   sutil en vez de bandas diagonales sueltas. ── */
+.tier-secundaria.cuad-cover{color:#1e293b}
+.tier-secundaria .cv-colegio{color:#1e3a8a}
+.tier-secundaria .cv-sesion{background:#1e3a8a;color:#fff}
+.tier-secundaria .cv-eyebrow{color:#2563eb}
+.tier-secundaria .cv-title{color:#0f172a}
+.tier-secundaria .cv-grado-num{color:#1e3a8a}
+.tier-secundaria .cv-grado-label{color:#2563eb}
+.tier-secundaria .cv-pei{color:#475569}
+.tier-secundaria .cv-title-rule{background:#2563eb}
+.tier-secundaria .cv-motif{background:linear-gradient(120deg,#fff 0%,#fff 64%,#eff6ff 64%,#eff6ff 100%)}
+.tier-secundaria .cv-motif::before{content:'';position:absolute;top:0;bottom:0;right:0;width:4px;background:#1e3a8a}
+
+/* ── Media (10°-11°): la más formal — imita el aire de un cuadernillo
+   oficial tipo Saber 11 (blanco, un acento dorado, marcas de esquina). ── */
+.tier-media.cuad-cover{color:#1c1917}
+.tier-media .cv-colegio{color:#0c1e3e}
+.tier-media .cv-sesion{background:#fff;color:#0c1e3e;border:2.5px solid #0c1e3e}
+.tier-media .cv-eyebrow{color:#9a6a1f}
+.tier-media .cv-title{color:#0c1e3e}
+.tier-media .cv-grado-num{color:#0c1e3e}
+.tier-media .cv-grado-label{color:#9a6a1f}
+.tier-media .cv-pei{color:#57534e}
+.tier-media .cv-title-rule{background:#9a6a1f}
+.tier-media .cv-motif::before{content:'';position:absolute;top:0;left:0;right:0;height:9px;background:#0c1e3e}
+.tier-media .cv-motif::after{content:'';position:absolute;bottom:0;left:0;right:0;height:9px;background:#9a6a1f}
+.tier-media .cv-corner{display:block;position:absolute;width:14mm;height:14mm;border:1.5px solid #0c1e3e;opacity:.55}
+.tier-media .cv-corner.tl{top:10mm;left:10mm;border-right:none;border-bottom:none}
+.tier-media .cv-corner.tr{top:10mm;right:10mm;border-left:none;border-bottom:none}
+.tier-media .cv-corner.bl{bottom:10mm;left:10mm;border-right:none;border-top:none}
+.tier-media .cv-corner.br{bottom:10mm;right:10mm;border-left:none;border-top:none}
+
+.cuad-instr h2{font-family:Arial,sans-serif;font-size:1.1rem;margin-bottom:.8rem}
+.cuad-instr p{font-size:.92rem;line-height:1.7;text-align:justify}
+
+.cuad-qhead{text-align:center;border-bottom:2px solid #111;padding-bottom:.5rem;margin-bottom:1rem;font-family:Arial,sans-serif}
+.cuad-qhead .cq-colegio{font-weight:800;font-size:.95rem}
+.cuad-qhead .cq-pei{font-size:.72rem;font-style:italic}
+.cuad-qhead .cq-sesion{font-weight:800;font-size:.85rem;margin-top:.3rem}
+.cuad-area-title{font-family:Arial,sans-serif;font-weight:800;font-size:1.05rem;margin:1rem 0 .6rem;border-bottom:1px solid #ccc;padding-bottom:.2rem;column-span:all}
+/* Dos columnas para ahorrar papel — cada pregunta se queda entera en
+   una columna (no se corta a la mitad); si de verdad no cabe, pasa
+   completa a la siguiente columna/página en vez de partirse. */
+.cuad-qbody{column-count:2;column-gap:9mm;column-rule:.75px solid #ddd}
+.cuad-q{margin-bottom:.9rem;break-inside:avoid-column;font-size:.82rem;line-height:1.45}
+.cuad-q b.qnum{margin-right:.3rem}
+.cuad-opts{margin-top:.25rem;padding-left:1.1rem}
+.cuad-opts div{margin-bottom:.12rem}
+.cuad-pagenum{position:absolute;bottom:8mm;right:16mm;font-size:.72rem;color:#666;font-family:Arial,sans-serif}
+
+@media print{
+  .cuad-page{box-shadow:none;margin:0}
+}
+
+/* Boletín de resultados por curso (imprimible) */
+.boletin-print{background:#fff;color:#111;padding:1.5rem;border-radius:8px;max-width:900px;margin:1rem auto}
+.boletin-hd{text-align:center;border-bottom:2px solid #111;padding-bottom:.6rem;margin-bottom:1rem}
+.boletin-hd h3{margin:.2rem 0}
+.boletin-print table{width:100%;border-collapse:collapse;font-size:.82rem}
+.boletin-print th,.boletin-print td{border:1px solid #ccc;padding:.45rem .5rem;text-align:left}
+.boletin-print th{background:#f0f0f0}
+.boletin-nota{font-size:.75rem;color:#555;margin-top:.8rem;font-style:italic}
+@media print{
+  .boletin-print{box-shadow:none}
+}
+
+/* ── Escaneo desde celular ── */
+.sc-video-wrap{position:relative;max-width:360px;margin-top:.6rem}
+.sc-video-wrap video{width:100%;border-radius:8px;background:#000;display:block}
+.sc-frame{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:70%;aspect-ratio:1/1;border:3px solid rgba(255,255,255,.85);border-radius:12px;
+  box-shadow:0 0 0 999px rgba(0,0,0,.25);pointer-events:none;
+}
+/* Botones A/B/C/D de digitación — tamaño mínimo de 44px recomendado
+   para que sean fáciles de tocar con el pulgar sin errores, ya que
+   este flujo se usa casi siempre desde el celular. */
+.opt-btn{min-height:44px;font-size:1rem!important;font-weight:800;border-radius:8px}
+.sc-grid > div{background:var(--surf2);border-radius:10px;padding:.5rem}
+
+/* ── Análisis (equivalente a "Pruebas Semestrales", alimentado por los
+   resultados diagnósticos reales en vez de digitación manual) ── */
+.an-nav{display:flex;gap:.4rem;flex-wrap:wrap;margin:1rem 0;background:var(--surf2);border-radius:10px;padding:.3rem}
+.an-navt{padding:.5rem .9rem;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--txt2)}
+.an-navt.on{background:var(--acc);color:#fff}
+.an-krow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.7rem;margin-bottom:1.2rem}
+.an-kpi{background:var(--surf);border:1px solid var(--bord);border-left:4px solid var(--c,var(--acc));border-radius:10px;padding:.8rem 1rem}
+.an-kpi .kl{font-size:.72rem;color:var(--txt2);text-transform:uppercase;letter-spacing:.03em}
+.an-kpi .kv{font-size:1.5rem;font-weight:800;margin:.15rem 0}
+.an-kpi .ks{font-size:.72rem;color:var(--txt2)}
+.an-cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.9rem;margin-bottom:1.2rem}
+.an-cc{background:var(--surf);border:1px solid var(--bord);border-radius:12px;padding:1rem}
+.an-cc.full{grid-column:1/-1}
+.an-ct{font-size:.82rem;font-weight:700;margin-bottom:.7rem;color:var(--txt2)}
+.an-sbrow{display:grid;grid-template-columns:110px 1fr 42px;align-items:center;gap:.5rem;margin-bottom:.5rem;font-size:.76rem}
+.an-sbt{display:flex;height:20px;border-radius:5px;overflow:hidden;background:var(--surf2)}
+.an-sbs{display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#0009;white-space:nowrap;overflow:hidden}
+.an-leg{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:.6rem;font-size:.74rem;color:var(--txt2)}
+.an-leg .li{display:flex;align-items:center;gap:.3rem}
+.an-leg .ld{width:10px;height:10px;border-radius:3px}
+.an-dwrap{display:flex;flex-direction:column;align-items:center;gap:.7rem}
+.an-dleg{width:100%;font-size:.76rem}
+.an-dr{display:flex;justify-content:space-between;padding:.2rem 0;border-bottom:1px dashed var(--bord)}
+.an-dr .dd{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:.4rem}
+.an-empty{padding:2rem;text-align:center;color:var(--txt2);font-size:.85rem}
+.an-panel{background:var(--surf);border:1px solid var(--bord);border-radius:12px;padding:1rem;margin-bottom:1rem}
+.an-panel-title{font-weight:800;font-size:.92rem;margin-bottom:.7rem;color:var(--acc2)}
+.an-ta{width:100%;min-height:110px;background:var(--surf2);border:1px solid var(--bord);border-radius:8px;color:var(--txt);padding:.6rem;font-family:var(--font);font-size:.85rem;resize:vertical}
+.an-alert{display:flex;gap:.7rem;align-items:flex-start;background:var(--surf);border:1px solid var(--bord);border-left:4px solid var(--c,var(--acc));border-radius:10px;padding:.8rem 1rem;margin-bottom:.6rem}
+.an-alert .ai-title{font-weight:700;font-size:.86rem}
+.an-alert .ai-desc{font-size:.78rem;color:var(--txt2);margin-top:.15rem}
+
+/* ── Lectura asistida por foto (OMR) ── */
+.omr-modal{position:fixed;inset:0;background:rgba(5,10,20,.94);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem}
+.omr-modal-inner{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:.7rem}
+.omr-modal video{width:100%;border-radius:8px;background:#000}
+.omr-cam-wrap{position:relative;width:100%}
+.omr-guide{position:absolute;border:3px dashed #4ade80;border-radius:4px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);pointer-events:none}
+.omr-modal p{color:var(--txt2);font-size:.82rem;text-align:center;margin:0}
+.omr-canvas-wrap{position:relative;width:100%;touch-action:none}
+.omr-canvas-wrap canvas{width:100%;border-radius:6px;display:block}
+.omr-handle{position:absolute;width:26px;height:26px;margin-left:-13px;margin-top:-13px;border-radius:50%;background:#4ade80;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);touch-action:none;cursor:grab}
+.omr-handle:active{cursor:grabbing;background:#22c55e}
+.omr-btnrow{display:flex;gap:.6rem;width:100%;flex-wrap:wrap;justify-content:center}
+.omr-baja-confianza{outline:2px solid var(--warn);outline-offset:2px;border-radius:8px}
+
