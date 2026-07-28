@@ -341,7 +341,7 @@ async function _abrirModalOMR(numFilas, onDetectado) {
 function _pasoAjustarOMR(modal, canvas, relGuide, numFilas, cerrar, onDetectado) {
   modal.innerHTML = `
     <div class="omr-modal-inner">
-      <p>Ajusta las 4 esquinas verdes para que encierren <b>exactamente</b> la columna de círculos, desde el centro de la fila 1 hasta el centro de la fila ${numFilas}.</p>
+           <p>Pon cada esquina verde exactamente en el <b>centro</b> de la burbuja de esa esquina: arriba-izquierda = burbuja A de la pregunta 1, arriba-derecha = burbuja D de la pregunta 1, abajo-izquierda = burbuja A de la pregunta ${numFilas}, abajo-derecha = burbuja D de la pregunta ${numFilas}.</p>
       <div class="omr-canvas-wrap" id="omr-canvas-wrap">
         <canvas id="omr-canvas"></canvas>
         <div class="omr-handle" data-corner="tl"></div>
