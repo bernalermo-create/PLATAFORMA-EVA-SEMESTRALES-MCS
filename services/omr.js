@@ -87,8 +87,8 @@ export function detectarRespuestas(ctx, anchoImg, altoImg, corners, numFilas) {
     const oscuridades = [];
     let muestrasMin = Infinity;
     for (let col = 0; col < 4; col++) {
-      const u = (col + 0.5) / 4;
-      const v = (fila + 0.5) / numFilas;
+            const u = col / 3;
+      const v = numFilas > 1 ? fila / (numFilas - 1) : 0.5;
       const punto = _interpolar(corners, u, v);
       const { oscuridad, muestras } = _oscuridadPromedio(ctx, punto.x, punto.y, radio, anchoImg, altoImg);
       oscuridades.push(oscuridad);
