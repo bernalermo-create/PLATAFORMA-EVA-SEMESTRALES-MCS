@@ -34,8 +34,8 @@ function _dist(p1, p2) { return Math.hypot(p2.x - p1.x, p2.y - p1.y); }
 // Radio de muestreo por círculo: una fracción del espacio disponible
 // entre filas/columnas, nunca menor a unos pocos píxeles.
 function _radioMuestra(corners, numFilas) {
-  const alturaFila = _dist(corners.tl, corners.bl) / numFilas;
-  const anchoCol = _dist(corners.tl, corners.tr) / 4;
+  const alturaFila = _dist(corners.tl, corners.bl) / Math.max(1, numFilas - 1);
+  const anchoCol = _dist(corners.tl, corners.tr) / 3;
   return Math.max(4, Math.min(alturaFila, anchoCol) * 0.30);
 }
 
