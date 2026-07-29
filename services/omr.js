@@ -98,3 +98,68 @@ function _oscuridadPromedio(ctx, cx, cy, radio, anchoImg, altoImg) {
 export function detectarRespuestas(ctx, anchoImg, altoImg, corners, numFilas) {
   const letras = ['A', 'B', 'C', 'D'];
   const radio = _radioMuestra(corners, numFilas);
+
+  // ── Pasada 1: mide la oscuridad de las 4 opciones de cada fila, sin
+  // decidir nada todavía. ─────────────────────────────────────────────
+  const filas = [];
+  for (let fila = 0; fila < numFilas; fila++) {
+    const oscuridades = [];
+    let muestrasMin = Infinity;
+    for (let col = 0; col < 4; col++) {
+      const u = col / 3;
+      const v = numFilas > 1 ? fila / (numFilas - 1) : 0.5;
+      const punto = _interpolar(corners, u, v);
+      const { oscuridad, muestras } = _oscuridadPromedio(ctx, punto.x, punto.y, radio, anchoImg, altoImg);
+      oscuridades.push(oscuridad);
+      muestrasMin = Math.min(muestrasMin, muestras);
+    }
+    filas.push({ oscuridades, muestrasMin });
+  }
+
+  // ── Línea base de "papel en blanco" para ESTA foto en particular ────
+  // Un umbral fijo (ej. "oscuridad < 18") funciona en una hoja sintética
+  // perfecta, pero una foto real tiene su propia luz, sombra y textura
+  // de papel — lo que en una foto es "blanco" (ej. 12) puede ser más
+  // oscuro que lo que en otra foto ya es "marcado" (ej. 10 con muy poca
+  // luz). En vez de un número mágico, se usa la propia foto como
+  // referencia: en cualquier examen real, la gran mayoría de las 4
+  // opciones de cada pregunta están SIN marcar (como mucho 1 de 4 tiene
+  // tinta) — entonces la MEDIANA de todas las oscuridades del bloque
+  // representa, en la práctica, "cómo se ve un círculo vacío en esta
+  // foto concreta", sin importar su iluminación. Marcar de verdad se
+  // detecta como un salto claro por ENCIMA de esa línea base, no como
+  // superar un valor absoluto fijo.
+  const todas = filas.flatMap(f => f.oscuridades).sort((a, b) => a - b);
+  const base = todas.length ? todas[Math.floor(todas.length / 2)] : 0;
+
+  const resultados = [];
+  filas.forEach(({ oscuridades, muestrasMin }, fila) => {
+    const ordenadas = [...oscuridades].sort((a, b) => b - a);
+    const brecha = ordenadas[0] - ordenadas[1];
+    // Confianza: qué tanto se distingue la más oscura de la segunda más
+    // oscura. Poca separación = probablemente vacía, doble marcada, o
+    // la esquina quedó mal ajustada — se marca como dudosa para que la
+    // revisión humana la mire con más atención.
+    let confianza = Math.max(0, Math.min(1, brecha / 55));
+    if (muestrasMin < 6) confianza = 0; // esquina mal ajustada / fuera de la foto
+    const idx = oscuridades.indexOf(ordenadas[0]);
+    // En blanco: la más oscura de las 4 no se despega lo suficiente de
+    // la línea base de "papel vacío" de ESTA foto — el valor absoluto no
+    // importa (puede ser una foto oscura entera), solo qué tanto resalta
+    // sobre lo que ya es normal-sin-marcar en la misma imagen.
+    const enBlanco = (ordenadas[0] - base) < 20;
+    resultados.push({ fila, letra: enBlanco ? null : letras[idx], confianza: enBlanco ? 0 : confianza, oscuridades });
+  });
+  return resultados;
+}
+
+// Punto inicial razonable para las 4 esquinas dado un rectángulo guía
+// en pantalla (se usa al pasar de "cámara" a "ajustar esquinas").
+export function esquinasIniciales(rect) {
+  return {
+    tl: { x: rect.left, y: rect.top },
+    tr: { x: rect.left + rect.width, y: rect.top },
+    bl: { x: rect.left, y: rect.top + rect.height },
+    br: { x: rect.left + rect.width, y: rect.top + rect.height },
+  };
+}
