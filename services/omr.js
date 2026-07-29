@@ -102,8 +102,9 @@ export function detectarRespuestas(ctx, anchoImg, altoImg, corners, numFilas) {
     // revisión humana la mire con más atención.
     let confianza = Math.max(0, Math.min(1, brecha / 55));
     if (muestrasMin < 6) confianza = 0; // esquina mal ajustada / fuera de la foto
-    const idx = oscuridades.indexOf(ordenadas[0]);
-    resultados.push({ fila, letra: letras[idx], confianza, oscuridades });
+        const idx = oscuridades.indexOf(ordenadas[0]);
+    const enBlanco = ordenadas[0] < 18;
+    resultados.push({ fila, letra: enBlanco ? null : letras[idx], confianza: enBlanco ? 0 : confianza, oscuridades });
   }
   return resultados;
 }
