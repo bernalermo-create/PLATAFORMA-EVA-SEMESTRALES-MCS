@@ -608,7 +608,7 @@ function renderDigitacion(root, hoja) {
       const dudosa = confianzas[abs] !== undefined && confianzas[abs] < 0.45;
       card.classList.toggle('omr-baja-confianza', dudosa);
     });
-    const contestadas = Object.keys(respuestas).length;
+        const contestadas = Object.values(respuestas).filter(v => v != null).length;
     box.querySelector('#sc-progress').textContent = `${contestadas} / ${total} respondidas`;
   }
 
