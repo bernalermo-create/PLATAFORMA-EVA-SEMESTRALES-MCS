@@ -6,7 +6,7 @@
 // vieja desde caché para siempre, sin importar qué se suba a GitHub
 // (esto pasó de verdad: los fixes de escaneo.js/resultados.js no se
 // veían en el celular porque seguían cacheados bajo "v5").
-const CACHE = 'pev-shell-v6';
+const CACHE = 'pev-shell-v7';
 const SHELL = [
   './', './index.html', './styles.css', './app.js',
   './services/store.js', './services/qr.js', './services/sync.js', './services/auth.js', './services/pwaInstall.js', './services/omr.js',

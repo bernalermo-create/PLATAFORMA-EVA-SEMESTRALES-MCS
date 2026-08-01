@@ -600,6 +600,13 @@ export const store = {
   listResultados(evaluacionId) {
     return evaluacionId ? DB.resultados.filter(r => r.evaluacion_id === evaluacionId) : DB.resultados;
   },
+  // Borra solo el resultado calificado (ej. de una prueba de escaneo real)
+  // sin tocar la hoja ni el estudiante — la hoja vuelve a quedar como
+  // "pendiente por escanear" y se puede volver a calificar normalmente.
+  deleteResultado(id) {
+    DB.resultados = DB.resultados.filter(r => r.id !== id);
+    scheduleSync();
+  },
 
   // ── Docentes ────────────────────────────────────────────────────
   // Padrón de docentes con contraseña individual — reemplaza (de forma
