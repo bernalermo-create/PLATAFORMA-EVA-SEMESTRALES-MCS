@@ -5,7 +5,7 @@
 //  segundo plano sincroniza esa misma base con el backend de Sheets/
 //  Drive (services/sync.js) — mismo patrón que "Pruebas Semestrales".
 // ════════════════════════════════════════════════════════════════════
-import { pullDB, pushDB, hasGasUrl } from './sync.js';
+import { pullDB, pushDelta, hasGasUrl } from './sync.js';
 
 const KEY = 'pev_db_v1'; // Plataforma de EValuación
 // Marca (con hora) que hay cambios locales aún no confirmados como
@@ -129,9 +129,88 @@ function saveLocal(db) {
   localStorage.setItem(KEY, JSON.stringify(db));
 }
 
+// ── Sincronización incremental ──────────────────────────────────────
+// Antes, cada cambio local disparaba pushDB(DB): la base COMPLETA se
+// mandaba y sobreescribía entera en el servidor. Con un solo docente
+// eso funcionaba porque nunca había nadie más escribiendo al mismo
+// tiempo, pero con varios docentes escaneando hojas a la vez, cada uno
+// tiene su propia copia local de DB — quien sincronizara de último
+// pisaba (no fusionaba) los resultados que el otro acababa de guardar,
+// perdiéndolos en silencio.
+//
+// Ahora se mantiene "_baseline": una copia de DB tal como se sabe que
+// quedó confirmada en el servidor. Cada push manda solo la DIFERENCIA
+// entre _baseline y el DB actual (qué registros son nuevos/distintos
+// por id, y cuáles desaparecieron) — el backend fusiona esa diferencia
+// registro por registro contra lo que ya tenga (ver _handlePushDelta
+// en el .gs), en vez de reemplazar todo el documento. _baseline solo
+// avanza por lo que el servidor confirmó recibir — nunca por "lo que
+// sea que DB tenga en ese momento" — para no dar por sincronizado algo
+// que en realidad nunca se llegó a enviar (ver _intentarPush).
+const _COLLECTIONS = ['cursos', 'estudiantes', 'evaluaciones', 'preguntas', 'hojas', 'resultados', 'docentes', 'analisisTexto', 'informesAnuales'];
+
+function _snapshot(db) { return JSON.parse(JSON.stringify(db)); }
+function _emptyDB() {
+  const db = {};
+  _COLLECTIONS.forEach(col => { db[col] = []; });
+  return db;
+}
+
+// Compara baseline (lo último confirmado) contra actual (DB en este
+// momento) y devuelve { upserts, deletes } por colección — solo
+// incluye colecciones que de verdad cambiaron, para no inflar el payload.
+function _diffDB(baseline, actual) {
+  const upserts = {}, deletes = {};
+  _COLLECTIONS.forEach(col => {
+    const baseArr = baseline[col] || [], actualArr = actual[col] || [];
+    const baseMap = new Map(baseArr.map(r => [r.id, r]));
+    const up = actualArr.filter(r => {
+      const prev = baseMap.get(r.id);
+      return !prev || JSON.stringify(prev) !== JSON.stringify(r);
+    });
+    const actualIds = new Set(actualArr.map(r => r.id));
+    const del = baseArr.filter(r => !actualIds.has(r.id)).map(r => r.id);
+    if (up.length) upserts[col] = up;
+    if (del.length) deletes[col] = del;
+  });
+  return { upserts, deletes };
+}
+
+function _diffIsEmpty(delta) {
+  return Object.keys(delta.upserts).length === 0 && Object.keys(delta.deletes).length === 0;
+}
+
+// Avanza el baseline aplicándole EXACTAMENTE el delta que el servidor
+// ya confirmó — nunca re-fotografiando el DB actual completo, porque
+// entre que se armó el delta y que el push terminó pueden haber
+// entrado más cambios locales (otra hoja escaneada) que todavía NO se
+// mandaron; si el baseline los adoptara igual sin haberlos enviado,
+// se perderían para siempre (nunca volverían a aparecer en un diff).
+function _applyDeltaToBaseline(baseline, delta) {
+  _COLLECTIONS.forEach(col => {
+    let arr = (baseline[col] || []).slice();
+    if (delta.upserts[col]) {
+      const map = new Map(arr.map(r => [r.id, r]));
+      delta.upserts[col].forEach(r => map.set(r.id, r));
+      arr = Array.from(map.values());
+    }
+    if (delta.deletes[col]) {
+      const delSet = new Set(delta.deletes[col]);
+      arr = arr.filter(r => !delSet.has(r.id));
+    }
+    baseline[col] = arr;
+  });
+  return baseline;
+}
+
 let DB = load();
+// Provisional hasta que initRemote() la reemplace con el estado real
+// del servidor — así scheduleSync()/_intentarPush() funcionan de forma
+// sensata incluso si initRemote() nunca corre (sin conexión configurada).
+let _baseline = _snapshot(DB);
 let _syncTimer = null;
 let _pushInFlight = false;
+let _pushAgain = false; // si llega un cambio nuevo mientras hay un push en vuelo, se atiende apenas termine el actual, sin solapar dos pushes de esta misma pestaña
 let _pullTimer = null;
 let _lastSyncStatus = { state: 'idle', at: null, error: null };
 let _retryTimer = null;
@@ -148,13 +227,17 @@ function scheduleSync() {
 }
 
 async function _intentarPush() {
+  _syncTimer = null;
+  if (_pushInFlight) { _pushAgain = true; return; }
+  const delta = _diffDB(_baseline, DB);
+  if (_diffIsEmpty(delta)) { localStorage.removeItem(PENDING_KEY); return; }
+  _pushInFlight = true;
   _lastSyncStatus = { state: 'syncing', at: null, error: null };
   document.dispatchEvent(new CustomEvent('pev:sync', { detail: _lastSyncStatus }));
-  _pushInFlight = true;
-  const r = await pushDB(DB);
+  const r = await pushDelta(delta);
   _pushInFlight = false;
-  _syncTimer = null;
   if (r.ok) {
+    _baseline = _applyDeltaToBaseline(_baseline, delta);
     localStorage.removeItem(PENDING_KEY);
     _retryDelay = 8000; // éxito: resetea el backoff para la próxima falla
     _lastSyncStatus = { state: 'ok', at: new Date(), error: null };
@@ -165,6 +248,7 @@ async function _intentarPush() {
     _retryDelay = Math.min(_retryDelay * 2, _RETRY_MAX);
   }
   document.dispatchEvent(new CustomEvent('pev:sync', { detail: _lastSyncStatus }));
+  if (_pushAgain) { _pushAgain = false; _intentarPush(); }
 }
 
 function uid(prefix = 'id') {
@@ -279,12 +363,31 @@ export const store = {
     // obsoletos), se reintenta ESE envío primero en vez de sobreescribir.
     const pendiente = parseInt(localStorage.getItem(PENDING_KEY) || '0', 10);
     if (hasGasUrl() && pendiente && (Date.now() - pendiente) < 5 * 60 * 1000) {
+      // No se sabe con certeza qué se alcanzó a confirmar antes del
+      // cierre/recargo (esto puede venir de una sesión de ANTES de que
+      // existiera el envío incremental) — se trata todo lo local como
+      // no enviado. Peor caso: se reenvía algo que el servidor ya tenía
+      // (el merge por id es idempotente, no hay duplicados ni pérdida).
+      _baseline = _emptyDB();
       await _intentarPush();
       return DB;
     }
     const r = await pullDB();
     if (r.ok) {
-      if (r.data && r.data.cursos) { DB = _ensureShape(r.data); saveLocal(DB); }
+      if (r.data && r.data.cursos) {
+        // El snapshot de referencia es el que YA confirmó el servidor,
+        // ANTES de que _ensureShape() pueda corregirle algo (ej. una
+        // sección inconsistente) — así, si esa corrección cambia algo,
+        // queda como un diff real que scheduleSync() manda de vuelta,
+        // en vez de quedar adoptada solo localmente y nunca sincronizada.
+        _baseline = _snapshot(r.data);
+        DB = _ensureShape(r.data);
+        saveLocal(DB);
+        // Si _ensureShape() no cambió nada, _intentarPush() lo detecta
+        // (diff vacío) y no manda nada — este scheduleSync() es barato
+        // incluso cuando no hay ninguna corrección real que reenviar.
+        scheduleSync();
+      }
       _lastSyncStatus = { state: 'ok', at: new Date(), error: null };
     } else {
       // Conexión falló: seguimos con lo que había en localStorage
@@ -317,8 +420,14 @@ export const store = {
       const remote = r.data;
       if (!remote || !remote.cursos) return;
       if (JSON.stringify(remote) === JSON.stringify(DB)) return; // nada nuevo
+      // Igual que en initRemote(): el baseline queda en lo que el
+      // servidor confirmó ANTES de que _ensureShape() le corrija algo,
+      // para que esa corrección (si la hay) se reenvíe como un diff
+      // real en vez de perderse como un cambio solo local.
+      _baseline = _snapshot(remote);
       DB = _ensureShape(remote);
       saveLocal(DB);
+      scheduleSync();
       document.dispatchEvent(new CustomEvent('pev:data-updated'));
     }, 25000);
   },

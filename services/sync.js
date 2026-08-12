@@ -41,17 +41,25 @@ export async function pullDB() {
   }
 }
 
-let _pushing = false, _queued = false;
-export async function pushDB(db) {
+// Antes se mandaba SIEMPRE la base completa (pushDB), y el backend la
+// sobreescribía entera — si dos docentes escaneaban a la vez, quien
+// sincronizara de último borraba sin darse cuenta los resultados que
+// el otro acababa de guardar. Ahora solo se manda lo que cambió desde
+// la última sincronización confirmada (delta = {upserts, deletes} por
+// colección, cada registro con su id) y el backend lo fusiona registro
+// por registro contra lo que ya tenga guardado (ver _handlePushDelta
+// en Codigo_plataforma_evaluacion.gs). El control de que no haya dos
+// pushDelta en vuelo a la vez desde esta misma pestaña vive en
+// store.js (_intentarPush), que es quien conoce el estado real de qué
+// hay pendiente — aquí ya no se necesita ninguna cola propia.
+export async function pushDelta(delta) {
   if (!hasGasUrl()) return { ok: false, error: 'Sin URL configurada' };
-  if (_pushing) { _queued = true; return { ok: true, queued: true }; }
-  _pushing = true;
   try {
     const res = await fetch(getGasUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       redirect: 'follow',
-      body: JSON.stringify({ key: REMOTE_KEY, data: db }),
+      body: JSON.stringify({ action: 'pushDelta', key: REMOTE_KEY, upserts: delta.upserts, deletes: delta.deletes }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const txt = await res.text();
@@ -59,11 +67,8 @@ export async function pushDB(db) {
     if (!d.ok) throw new Error(d.error || 'Error del servidor');
     return { ok: true };
   } catch (err) {
-    console.error('[sync] pushDB error:', err);
+    console.error('[sync] pushDelta error:', err);
     return { ok: false, error: err.message };
-  } finally {
-    _pushing = false;
-    if (_queued) { _queued = false; /* el próximo cambio disparará otro push */ }
   }
 }
 
