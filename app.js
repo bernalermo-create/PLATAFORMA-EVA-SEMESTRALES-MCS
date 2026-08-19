@@ -3,7 +3,8 @@
 //  cargado dinámicamente (code-splitting simple), no un archivo gigante.
 // ════════════════════════════════════════════════════════════════════
 import { store } from './services/store.js';
-import { login, logout, isLoggedIn, isAdmin, currentUser } from './services/auth.js';
+import { login, logout, loginConSSO, isLoggedIn, isAdmin, currentUser } from './services/auth.js';
+import { currentGasUrl } from './services/sync.js';
 import './services/pwaInstall.js'; // registra el listener de instalación lo antes posible
 
 const routes = {
@@ -156,8 +157,34 @@ window.doLogout = function () {
   showLogin();
 };
 
+// ── SSO desde MCS Platform ───────────────────────────────────────────
+// Si llega ?sso=TOKEN en la URL, se verifica contra el backend de Apps
+// Script (que tiene el secreto compartido) y, si es válido, se hace
+// login automático sin pedir contraseña. El token se borra de la URL
+// de inmediato pase lo que pase, para que no quede en el historial ni
+// se reenvíe por error si el docente comparte el enlace.
+async function intentarLoginSSO(token) {
+  try {
+    const res = await fetch(`${currentGasUrl()}?action=ssoVerify&token=${encodeURIComponent(token)}`, { cache: 'no-cache' });
+    const data = await res.json();
+    if (!data.ok) { toast('Inicio de sesión automático: ' + (data.error || 'respuesta inesperada del servidor.'), 'bad'); return; }
+
+    await store.initRemote(); // padrón de docentes actualizado antes de validar
+    const r = loginConSSO(data.nombre, store.listDocentes());
+    if (!r.ok) toast(r.error, 'bad');
+  } catch (err) {
+    toast('No se pudo conectar para iniciar sesión automática.', 'bad');
+  }
+}
+
 window.addEventListener('hashchange', router);
 window.addEventListener('DOMContentLoaded', async () => {
+  const ssoToken = new URLSearchParams(location.search).get('sso');
+  if (ssoToken) {
+    history.replaceState(null, '', location.pathname + location.hash);
+    if (!isLoggedIn()) await intentarLoginSSO(ssoToken);
+  }
+
   if (isLoggedIn()) {
     showApp();
     updateSyncBadge({ state: 'syncing' });
