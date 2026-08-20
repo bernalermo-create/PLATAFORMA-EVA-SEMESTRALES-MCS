@@ -67,3 +67,44 @@ export function login(role, user, pwd, docentes) {
 export function logout() {
   sessionStorage.removeItem(SESSION_KEY);
 }
+
+// Ignora acentos, mayúsculas/minúsculas y el orden de las palabras
+// (MCS Platform guarda "Nombre Apellido"; aquí se registra "APELLIDO
+// NOMBRE") para poder comparar el nombre que llega en el token SSO
+// contra el padrón de docentes sin exigir que coincidan carácter a
+// carácter.
+function _normalizarNombre(s) {
+  const combinantes = new RegExp('[' + String.fromCharCode(0x0300) + '-' + String.fromCharCode(0x036f) + ']', 'g');
+  return (s || '')
+    .normalize('NFD').replace(combinantes, '')
+    .toUpperCase()
+    .split(/\s+/).filter(Boolean).sort().join(' ');
+}
+
+// Autologin vía SSO desde MCS Platform: el token ya fue verificado por
+// el backend de Apps Script (ver app.js), así que aquí no se pide
+// contraseña — pero sí se exige que el nombre coincida con un docente
+// REGISTRADO y ACTIVO en el padrón de ESTA plataforma, igual que en
+// login(). Un token válido no basta si el docente no existe aquí.
+export function loginConSSO(nombreToken, docentes) {
+  const normObjetivo = _normalizarNombre(nombreToken);
+  const candidatos = (docentes || []).filter(d => _normalizarNombre(d.nombre) === normObjetivo);
+
+  if (candidatos.length === 0) {
+    return {
+      ok: false,
+      error: `No estás registrado como docente aquí con el nombre "${nombreToken}". Pídele al administrador que te registre en "Docentes", o inicia sesión manualmente si tu nombre quedó escrito distinto.`,
+    };
+  }
+  if (candidatos.length > 1) {
+    return { ok: false, error: 'Hay más de un docente registrado con ese nombre — inicia sesión manualmente.' };
+  }
+  const registrado = candidatos[0];
+  if (!registrado.activo) return { ok: false, error: 'Tu usuario está inactivo. Contacta al administrador.' };
+
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+    role: 'docente', user: registrado.nombre, docenteId: registrado.id,
+    grados: registrado.grados || [], areas: registrado.areas || [],
+  }));
+  return { ok: true };
+}
